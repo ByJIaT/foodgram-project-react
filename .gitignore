@@ -137,4 +137,4 @@ backend/media
 backend/db
 backend/venv
 backend/env
-backend/.env
+.env
