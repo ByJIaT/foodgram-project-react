@@ -14,15 +14,49 @@ class CustomUser(AbstractUser):
     first_name = models.CharField(_('first name'), max_length=150, )
     last_name = models.CharField(_('last name'), max_length=150, )
 
-    REQUIRED_FIELDS = ['email', 'last_name', 'first_name', ]
-
     class Meta(AbstractUser.Meta):
         constraints = [
             models.UniqueConstraint(
                 fields=['email', 'username'],
-                name='unique_email_username',
+                name='%(app_label)s_%(class)s',
             )
         ]
         indexes = [
             models.Index(fields=('username',)),
         ]
+
+
+class SubscriptionManager(models.Manager):
+    def is_subscribed(self, user, author):
+        return self.filter(user=user, author=author).exists()
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='%(app_label)s_%(class)s_user',
+    )
+    author = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='%(app_label)s_%(class)s_author',
+    )
+
+    object = SubscriptionManager()
+
+    class Meta:
+        verbose_name = _('Subscription')
+        verbose_name_plural = _('Subscriptions')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='%(app_label)s_%(class)s',
+            )
+        ]
+        indexes = [
+            models.Index(fields=('user',))
+        ]
+
+    def __str__(self):
+        return f'{self.user} {self.author}'
