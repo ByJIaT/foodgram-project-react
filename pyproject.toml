@@ -8,7 +8,7 @@ packages = [{include = "foodgram_project_react"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-django = "^3.2.3"
+django = "4.2.2"
 djangorestframework = "^3.12.4"
 gunicorn = "^20.1.0"
 psycopg2-binary = "^2.9.5"
