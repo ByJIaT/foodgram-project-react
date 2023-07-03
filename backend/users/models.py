@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 class CustomUser(AbstractUser):
     email = models.EmailField(
         _('email address'),
+        max_length=254,
         unique=True,
         error_messages={
             'unique': _("A user with that email address already exists."),
@@ -30,6 +31,9 @@ class SubscriptionManager(models.Manager):
     def is_subscribed(self, user, author):
         return self.filter(user=user, author=author).exists()
 
+    def delete(self, user, author):
+        return self.filter(user=user, author=author).delete()
+
 
 class Subscription(models.Model):
     user = models.ForeignKey(
@@ -43,7 +47,7 @@ class Subscription(models.Model):
         related_name='%(app_label)s_%(class)s_author',
     )
 
-    object = SubscriptionManager()
+    objects = SubscriptionManager()
 
     class Meta:
         verbose_name = _('Subscription')
