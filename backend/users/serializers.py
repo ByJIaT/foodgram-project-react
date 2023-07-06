@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 
@@ -14,11 +13,11 @@ class CustomUserSerializer(UserSerializer):
         read_only_fields = ('is_subscribed',)
 
     def get_is_subscribed(self, obj):
-        request_user = self.context.get('request').user
-        if request_user == obj:
+        user = self.context.get('request').user
+        if user == obj or user.is_anonymous:
             return False
-        return request_user.users_subscription_user.is_subscribed(
-            request_user, obj)
+        return user.users_subscription_user.is_subscribed(
+            user, obj)
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):

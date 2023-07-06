@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
 from config.settings import TEXT_LENGTH
@@ -24,9 +25,16 @@ class Tag(models.Model):
         return f'{self.name[:TEXT_LENGTH]}'
 
 
+class OrderedIngredientManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by(Lower('name'))
+
+
 class Ingredient(models.Model):
-    name = models.CharField(max_length=200, )
+    name = models.CharField(max_length=200, unique=True)
     measurement_unit = models.CharField(max_length=200, )
+
+    objects = OrderedIngredientManager()
 
     class Meta:
         verbose_name = _('Ingredient')
@@ -51,18 +59,17 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='%(app_label)s_%(class)s',
+        related_name='recipe_author',
     )
     ingredients = models.ManyToManyField(
         Ingredient,
         through='RecipeIngredient',
-        related_name='%(app_label)s_%(class)s',
+        related_name='recipe_ingredients',
     )
-    tags = models.ForeignKey(
+    tags = models.ManyToManyField(
         Tag,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='%(app_label)s_%(class)s',
+        through='RecipeTag',
+        related_name='recipe_tags',
     )
     name = models.CharField(max_length=200, verbose_name=_('recipe name'))
     image = models.ImageField(upload_to='recipes/images/', )
@@ -88,17 +95,18 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
-    ingredients = models.ForeignKey(
+    ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='%(app_label)s_%(class)s',
+        related_name='recipeingredient_ingredients',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='%(app_label)s_%(class)s',
+        related_name='recipeingredient_recipes',
     )
     amount = models.IntegerField(
+        default=0,
         validators=[
             MinValueValidator(1, message=_('Must be more then 1')),
         ],
@@ -110,26 +118,60 @@ class RecipeIngredient(models.Model):
         verbose_name_plural = _('RecipeIngredients')
         constraints = [
             models.UniqueConstraint(
-                fields=['recipe', 'ingredients'],
+                fields=['recipe', 'ingredient'],
                 name='%(app_label)s_%(class)s',
             )
         ]
 
     def __str__(self):
-        return f'{self.recipe} {self.ingredients}'
+        return f'{self.recipe} {self.ingredient}'
+
+
+class RecipeTag(models.Model):
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        related_name='recipetag_tags',
+    )
+
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='recipetag_recipes',
+    )
+
+    class Meta:
+        verbose_name = _('RecipeTag')
+        verbose_name_plural = _('RecipeTags')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'tag'],
+                name='%(app_label)s_%(class)s',
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.recipe} {self.tag}'
+
+
+class ShoppingCartManager(models.Manager):
+    def is_in_shopping_cart(self, user, recipe):
+        return self.filter(user=user, recipe=recipe).exists()
 
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='%(app_label)s_%(class)s',
+        related_name='shoppingcart_users',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='%(app_label)s_%(class)s',
+        related_name='shoppingcart_recipes',
     )
+
+    objects = ShoppingCartManager()
 
     class Meta:
         verbose_name = _('ShoppingCart')
@@ -148,17 +190,24 @@ class ShoppingCart(models.Model):
         return f'{self.user} {self.recipe}'
 
 
+class FavoriteManager(models.Manager):
+    def is_favorited(self, user, recipe):
+        return self.filter(user=user, recipe=recipe).exists()
+
+
 class Favorite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='%(app_label)s_%(class)s',
+        related_name='favorite_users',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='%(app_label)s_%(class)s',
+        related_name='favorite_recipes',
     )
+
+    objects = FavoriteManager()
 
     class Meta:
         verbose_name = _('Favorite')

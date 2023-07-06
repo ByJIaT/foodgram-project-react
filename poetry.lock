@@ -329,6 +329,16 @@ djet = ["djet (>=0.3.0,<0.4.0)"]
 webauthn = ["webauthn (<1.0)"]
 
 [[package]]
+name = "drf-writable-nested"
+version = "0.7.0"
+description = "Writable nested helpers for django-rest-framework's serializers"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "drf_writable_nested-0.7.0-py3-none-any.whl", hash = "sha256:154c0381e8a3a477e0fd539d5e1caf8ff4c1097a9c0c0fe741d4858b11b0455b"},
+]
+
+[[package]]
 name = "drf-yasg"
 version = "1.21.6"
 description = "Automated generation of real Swagger/OpenAPI 2.0 schemas from Django Rest Framework code."
@@ -758,6 +768,25 @@ files = [
 ]
 
 [[package]]
+name = "reportlab"
+version = "4.0.4"
+description = "The Reportlab Toolkit"
+optional = false
+python-versions = ">=3.7,<4"
+files = [
+    {file = "reportlab-4.0.4-py3-none-any.whl", hash = "sha256:3dcda79ce04baf70721e2ec54854722644262cac2feec3d5c4c5e77015504cb0"},
+    {file = "reportlab-4.0.4.tar.gz", hash = "sha256:7f70b3b56aff5f11cb4136c51a0f5a56fe6e4c8fbbac7b903076db99a8ef31c1"},
+]
+
+[package.dependencies]
+pillow = ">=9.0.0"
+
+[package.extras]
+accel = ["rl-accel (>=0.9.0,<1.1)"]
+pycairo = ["freetype-py (>=2.3.0,<2.4)", "rlPyCairo (>=0.2.0,<1)"]
+renderpm = ["rl-renderPM (>=4.0.3,<4.1)"]
+
+[[package]]
 name = "requests"
 version = "2.31.0"
 description = "Python HTTP for Humans."
@@ -912,4 +941,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "ddc1b9b798ec28103953e47f07f3fa0d0b1f339f5e05e4a4bbc4419a0be3aea1"
+content-hash = "0cc7540836e4cfe780fbdb868c217f43c352667078b8fab082fbf67d0e76694e"
