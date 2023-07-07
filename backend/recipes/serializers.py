@@ -1,9 +1,10 @@
 import base64
 
 from django.core.files.base import ContentFile
+from django.db.models import Q, F
 from rest_framework import serializers
 
-from recipes.mixins import CreateUpdateNestedMixin
+from core.mixins import CreateUpdateNestedMixin
 from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient,
                             RecipeTag)
 from users.serializers import CustomUserSerializer
@@ -53,6 +54,15 @@ class RecipeSerializer(CreateUpdateNestedMixin, serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = '__all__'
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        recipe_id = representation['id']
+        for ingredient in representation['ingredients']:
+            amount = RecipeIngredient.objects.get(
+                recipe_id=recipe_id, ingredient_id=ingredient['id']).amount
+            ingredient.update({'amount': amount})
+        return representation
 
     def get_is_favorited(self, recipe):
         user = self.context.get('request').user
