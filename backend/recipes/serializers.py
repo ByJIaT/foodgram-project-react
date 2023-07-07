@@ -1,12 +1,10 @@
 import base64
 
 from django.core.files.base import ContentFile
-from django.db.models import Q, F
 from rest_framework import serializers
 
 from core.mixins import CreateUpdateNestedMixin
-from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient,
-                            RecipeTag)
+from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient)
 from users.serializers import CustomUserSerializer
 
 
@@ -25,22 +23,19 @@ class TagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class RecipeIngredientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RecipeIngredient
-        fields = '__all__'
-
-
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = '__all__'
 
 
-class RecipeTagSerializer(serializers.ModelSerializer):
+class RecipeReadSerializer(serializers.ModelSerializer):
+    image = Base64ImageField(required=True)
+
     class Meta:
-        model = RecipeTag
-        fields = '__all__'
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+        read_only_fields = ('__all__',)
 
 
 class RecipeSerializer(CreateUpdateNestedMixin, serializers.ModelSerializer):

@@ -1,8 +1,8 @@
 import io
-import unicodedata
 
 from django.db.models import Sum
 from django.http import FileResponse
+
 from django.utils.translation import gettext_lazy as _
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -10,6 +10,7 @@ from reportlab.pdfgen import canvas
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
@@ -17,6 +18,7 @@ from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from recipes.models import (Tag, Ingredient, Recipe, Favorite, ShoppingCart)
 from recipes.serializers import (
     TagSerializer, IngredientSerializer, RecipeSerializer,
+    RecipeReadSerializer,
 )
 from users.permissions import IsAdminOrReadOnly, IsAuthorAdminOrReadOnly
 
@@ -36,7 +38,9 @@ class IngredientViewSet(ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(ModelViewSet):
-    queryset = Recipe.objects.all()
+    queryset = (Recipe.objects.all().select_related('author')
+                .prefetch_related('ingredients')
+                )
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthorAdminOrReadOnly,)
 
@@ -47,67 +51,66 @@ class RecipeViewSet(ModelViewSet):
         serializer.save(author=self.request.user)
 
     @action(('post',), detail=True, permission_classes=(IsAuthenticated,))
-    def favorite(self, request, id=None):
+    def favorite(self, request, pk=None):
         user = request.user
-        recipe = Recipe.objects.get(id=id)
+        recipe = get_object_or_404(Recipe, pk=pk)
         if Favorite.objects.is_favorited(user, recipe):
             return Response(
                 {'errors': _('Recipe already in favorites')},
                 status=status.HTTP_400_BAD_REQUEST
             )
         Favorite.objects.create(user=user, recipe=recipe)
-        serializer = RecipeSerializer(recipe)
+        serializer = RecipeReadSerializer(recipe)
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
         )
 
     @favorite.mapping.delete
-    def delete_favorite(self, request, id=None):
+    def delete_favorite(self, request, pk=None):
         user = request.user
-        recipe = Recipe.objects.get(id=id)
+        recipe = get_object_or_404(Recipe, pk=pk)
         if not Favorite.objects.is_favorited(user, recipe):
             return Response(
                 {'errors': _('Recipe are not in favorites')},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        Favorite.objects.delete(user=user, recipe=recipe)
+        Favorite.objects.delete(user, recipe)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(('post',), detail=True, permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, pk=None):
         user = request.user
-        recipe = Recipe.objects.get(pk=pk)
+        recipe = get_object_or_404(Recipe, pk=pk)
         if ShoppingCart.objects.is_in_shopping_cart(user, recipe):
             return Response(
                 {'errors': _('Recipe already in shopping cart')},
                 status=status.HTTP_400_BAD_REQUEST
             )
         ShoppingCart.objects.create(user=user, recipe=recipe)
-        serializer = RecipeSerializer(recipe)
+        serializer = RecipeReadSerializer(recipe)
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
         )
 
     @shopping_cart.mapping.delete
-    def delete_from_shopping_cart(self, request, id=None):
+    def delete_from_shopping_cart(self, request, pk=None):
         user = request.user
-        recipe = Recipe.objects.get(id=id)
+        recipe = get_object_or_404(Recipe, pk=pk)
         if not ShoppingCart.objects.is_in_shopping_cart(user, recipe):
             return Response(
                 {'errors': _('Recipe are not in shopping cart')},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        ShoppingCart.objects.delete(user=user, recipe=recipe)
+        ShoppingCart.objects.delete(user, recipe)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(('get',), detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
         ingredients = (
             Ingredient.objects.filter(
-                recipeingredient_ingredients__recipe__shoppingcart_recipes__user
-                =request.user)
+                recipeingredient_ingredients__recipe__shoppingcart_recipes__user=request.user)
             .values('name', 'measurement_unit')
             .annotate(amount=Sum('recipeingredient_ingredients__amount'))
         )

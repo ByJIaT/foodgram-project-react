@@ -16,8 +16,7 @@ class CustomUserSerializer(UserSerializer):
         user = self.context.get('request').user
         if user == obj or user.is_anonymous:
             return False
-        return user.users_subscription_user.is_subscribed(
-            user, obj)
+        return user.subscription_users.is_subscribed(user, obj)
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -38,10 +37,8 @@ class SubscriptionSerializer(CustomUserSerializer):
         )
         read_only_fields = ('__all__',)
 
-    @staticmethod
-    def get_recipes(obj):
+    def get_recipes(self, obj):
         return obj.recipes_recipe.get_recipes()
 
-    @staticmethod
-    def get_recipes_count(obj):
+    def get_recipes_count(self, obj):
         return obj.recipes_recipe.get_recipes_count()

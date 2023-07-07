@@ -26,7 +26,7 @@ class CreateUpdateNestedMixin(serializers.ModelSerializer):
                     m2m_manager.set(model.objects.filter(
                         id__in=related_data))
 
-                except:
+                except TypeError:
                     for data_dict in related_data:
                         id = data_dict.pop('id')
                         model_obj = model.objects.get(id=id)

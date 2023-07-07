@@ -329,16 +329,6 @@ djet = ["djet (>=0.3.0,<0.4.0)"]
 webauthn = ["webauthn (<1.0)"]
 
 [[package]]
-name = "drf-writable-nested"
-version = "0.7.0"
-description = "Writable nested helpers for django-rest-framework's serializers"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "drf_writable_nested-0.7.0-py3-none-any.whl", hash = "sha256:154c0381e8a3a477e0fd539d5e1caf8ff4c1097a9c0c0fe741d4858b11b0455b"},
-]
-
-[[package]]
 name = "drf-yasg"
 version = "1.21.6"
 description = "Automated generation of real Swagger/OpenAPI 2.0 schemas from Django Rest Framework code."
@@ -941,4 +931,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "0cc7540836e4cfe780fbdb868c217f43c352667078b8fab082fbf67d0e76694e"
+content-hash = "3f864fe77214e0288b190b794e8cfa69ae843cd86e494595b73c21973f8e52de"

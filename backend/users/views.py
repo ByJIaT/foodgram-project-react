@@ -15,9 +15,9 @@ User = get_user_model()
 
 class CustomUserViewSet(UserViewSet):
     @action(('post',), detail=True, permission_classes=(IsAuthenticated,))
-    def subscribe(self, request, id=None):
+    def subscribe(self, request, pk=None):
         user = request.user
-        author = get_object_or_404(User, id=id)
+        author = get_object_or_404(User, pk=pk)
         if Subscription.objects.is_subscribed(user, author):
             return Response(
                 {'errors': _('Self subscription not possible')},
@@ -31,25 +31,22 @@ class CustomUserViewSet(UserViewSet):
             )
 
         Subscription.objects.create(user=user, author=author)
-        serializer = SubscriptionSerializer(
-            author,
-            context={'request': request},
-        )
+        serializer = SubscriptionSerializer(author)
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
         )
 
     @subscribe.mapping.delete
-    def delete_subscribe(self, request, id=None):
+    def delete_subscribe(self, request, pk=None):
         user = request.user
-        author = get_object_or_404(User, id=id)
+        author = get_object_or_404(User, pk=pk)
         if not Subscription.objects.is_subscribed(user, author):
             return Response(
                 {'errors': _('You are not subscribed')},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        Subscription.objects.delete(user=user, author=author)
+        Subscription.objects.delete(user, author)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(('get',), detail=False, permission_classes=(IsAuthenticated,))

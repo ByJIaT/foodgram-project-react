@@ -158,6 +158,9 @@ class ShoppingCartManager(models.Manager):
     def is_in_shopping_cart(self, user, recipe):
         return self.filter(user=user, recipe=recipe).exists()
 
+    def delete(self, user, recipe):
+        return self.filter(user=user, recipe=recipe).delete()
+
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
@@ -193,6 +196,9 @@ class ShoppingCart(models.Model):
 class FavoriteManager(models.Manager):
     def is_favorited(self, user, recipe):
         return self.filter(user=user, recipe=recipe).exists()
+
+    def delete(self, user, recipe):
+        return self.filter(user=user, recipe=recipe).delete()
 
 
 class Favorite(models.Model):

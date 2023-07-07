@@ -1,7 +1,5 @@
-import collections
 import json
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from recipes.models import Ingredient
@@ -11,7 +9,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             with open(
-                    f'../data/ingredients.json',
+                    '../data/ingredients.json',
                     mode='r',
                     encoding='utf-8',
             ) as file:
