@@ -1,0 +1,12 @@
+[
+  {
+    "name": "обед",
+    "color": "#cf1f36",
+    "slug": "obed"
+  },
+    {
+    "name": "ужин",
+    "color": "#32a852",
+    "slug": "ugin"
+  }
+]

@@ -1,0 +1,8 @@
+venv
+.git
+.idea
+.vscode
+media
+.env
+.pytest_cache
+db.sqlite3

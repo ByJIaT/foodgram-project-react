@@ -130,3 +130,11 @@ dmypy.json
 
 # .idea
 .idea
+
+backend/static
+backend/logs
+backend/media
+backend/db
+backend/venv
+backend/env
+.pytest_cache
