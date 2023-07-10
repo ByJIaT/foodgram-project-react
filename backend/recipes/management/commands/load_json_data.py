@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from recipes.models import Ingredient, Tag
@@ -15,7 +16,7 @@ class Command(BaseCommand):
         try:
             for model, file in DATASET.items():
                 with open(
-                        f'../data/{file}',
+                        f'{settings.BASE_DIR}/data/{file}',
                         mode='r',
                         encoding='utf-8',
                 ) as f:

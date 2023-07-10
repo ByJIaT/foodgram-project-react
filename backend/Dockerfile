@@ -1,10 +1,18 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+RUN pip install "poetry==1.5.1"
 
-RUN poetry install
+COPY poetry.lock pyproject.toml /app/
 
-COPY . .
+RUN poetry config virtualenvs.create false \
+    && poetry install --only main --no-interaction --no-ansi --no-root
 
+COPY backend/ .
+
+COPY data .
+
+RUN chmod 777 /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
