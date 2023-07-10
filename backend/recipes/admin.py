@@ -32,7 +32,7 @@ class RecipeAdmin(admin.ModelAdmin):
     inlines = (IngredientsRecipeInline,)
     list_display = (
         'author', 'get_tags', 'name', 'get_ingredients', 'image', 'text',
-        'cooking_time',
+        'cooking_time', 'in_favorites',
     )
     fields = ()
     search_fields = ('name', 'author', 'tags')
@@ -47,6 +47,9 @@ class RecipeAdmin(admin.ModelAdmin):
     @admin.display(description='tags')
     def get_tags(self, obj):
         return '\n'.join([tag.name for tag in obj.tags.all()])
+
+    def in_favorites(self, recipe):
+        return recipe.favorite_recipes.count()
 
 
 @admin.register(Favorite)
