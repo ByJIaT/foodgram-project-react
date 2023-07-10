@@ -137,4 +137,4 @@ backend/media
 backend/db
 backend/venv
 backend/env
-.env
+.pytest_cache

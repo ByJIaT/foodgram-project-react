@@ -29,13 +29,13 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class RecipeReadSerializer(serializers.ModelSerializer):
+class RecipeReadOnlySerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=True)
 
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
-        read_only_fields = ('__all__',)
+        read_only_fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class RecipeSerializer(CreateUpdateNestedMixin, serializers.ModelSerializer):

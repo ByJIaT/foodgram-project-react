@@ -1,6 +1,7 @@
 import io
 
 from django.db.models import Sum
+from django.db.models.constants import LOOKUP_SEP
 from django.http import FileResponse
 
 from django.utils.translation import gettext_lazy as _
@@ -18,7 +19,7 @@ from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from recipes.models import (Tag, Ingredient, Recipe, Favorite, ShoppingCart)
 from recipes.serializers import (
     TagSerializer, IngredientSerializer, RecipeSerializer,
-    RecipeReadSerializer,
+    RecipeReadOnlySerializer,
 )
 from users.permissions import IsAdminOrReadOnly, IsAuthorAdminOrReadOnly
 
@@ -60,7 +61,7 @@ class RecipeViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         Favorite.objects.create(user=user, recipe=recipe)
-        serializer = RecipeReadSerializer(recipe)
+        serializer = RecipeReadOnlySerializer(recipe)
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
@@ -88,7 +89,7 @@ class RecipeViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         ShoppingCart.objects.create(user=user, recipe=recipe)
-        serializer = RecipeReadSerializer(recipe)
+        serializer = RecipeReadOnlySerializer(recipe)
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
@@ -108,9 +109,15 @@ class RecipeViewSet(ModelViewSet):
 
     @action(('get',), detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
+        lookup = LOOKUP_SEP.join(
+            ('recipeingredient_ingredients', 'recipe', 'shoppingcart_recipes',
+             'user',)
+        )
+        user = request.user
+
         ingredients = (
-            Ingredient.objects.filter(
-                recipeingredient_ingredients__recipe__shoppingcart_recipes__user=request.user)
+            Ingredient.objects
+            .filter(**{lookup: user})
             .values('name', 'measurement_unit')
             .annotate(amount=Sum('recipeingredient_ingredients__amount'))
         )

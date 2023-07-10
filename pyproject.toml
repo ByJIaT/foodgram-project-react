@@ -8,7 +8,7 @@ packages = [{include = "foodgram_project_react"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-django = "4.2.2"
+django = "^4.2.2"
 djangorestframework = "^3.12.4"
 gunicorn = "^20.1.0"
 psycopg2-binary = "^2.9.5"
@@ -18,10 +18,25 @@ djoser = "^2.1.0"
 python-dotenv = "^1.0.0"
 reportlab = "^4.0.4"
 
-
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 isort = "^4.3.21"
 flake8 = "^3.7.9"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+pytest-django = "^4.5.2"
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+DJANGO_SETTINGS_MODULE = "config.settings"
+addopts = "-vv -p no:cacheprovider --disable-warnings"
+norecursedirs = [".*"]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+disable_test_id_escaping_and_forfeit_all_rights_to_community_support = true
+
+[tool.isort]
+line_length = 79
 
 
 [build-system]

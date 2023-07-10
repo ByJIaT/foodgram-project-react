@@ -1,16 +1,17 @@
+from collections import OrderedDict
+
 from django.db import transaction
 from rest_framework import serializers
 
 
 class CreateUpdateNestedMixin(serializers.ModelSerializer):
+    """Принимает данные вида [1,] или [{'id': 1},]."""
 
     def update_or_create(self, instance, validated_data):
         reverse_relations = {}
 
         for field_name, field in self.fields.items():
-            if isinstance(
-                    field, serializers.ListSerializer
-            ):
+            if isinstance(field, serializers.ListSerializer):
                 if field.source in validated_data:
                     validated_data.pop(field.source)
 
@@ -28,12 +29,13 @@ class CreateUpdateNestedMixin(serializers.ModelSerializer):
 
                 except TypeError:
                     for data_dict in related_data:
-                        id = data_dict.pop('id')
-                        model_obj = model.objects.get(id=id)
-                        m2m_manager.set(
-                            [model_obj],
-                            through_defaults=data_dict,
-                        )
+                        if isinstance(data_dict, OrderedDict):
+                            id = data_dict.pop('id')
+                            model_obj = model.objects.get(id=id)
+                            m2m_manager.set(
+                                [model_obj],
+                                through_defaults=data_dict,
+                            )
 
         return instance
 
