@@ -37,14 +37,16 @@ class SubscriptionManager(models.Manager):
 
 class Subscription(models.Model):
     user = models.ForeignKey(
-        CustomUser,
+        to=CustomUser,
         on_delete=models.CASCADE,
-        related_name='subscription_users',
+        related_name='subscribers',
+        verbose_name=_('Subscribers'),
     )
     author = models.ForeignKey(
-        CustomUser,
+        to=CustomUser,
         on_delete=models.CASCADE,
-        related_name='subscription_authors',
+        related_name='subscriptions',
+        verbose_name=_('Recipe author')
     )
 
     objects = SubscriptionManager()
