@@ -6,7 +6,7 @@ volumes:
 
 services:
   db:
-    image: postgres:13.0-alpine
+    image: postgres:15.3-alpine
     restart: always
     volumes:
       - pg_data:/var/lib/postgresql/data
@@ -14,18 +14,11 @@ services:
       - "5432:5432"
     env_file:
       - ../.env
-    healthcheck:
-      test: pg_isready -U blog -d blog
-      interval: 30s
-      timeout: 3s
-      retries: 3
 
   backend:
     build:
       context: "../"
       dockerfile: ./backend/Dockerfile
-    command:
-      - gunicorn config.wsgi --bind 0:8000
     restart: always
     volumes:
       - static_dir:/app/static/

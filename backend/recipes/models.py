@@ -60,20 +60,9 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = _('Ingredient')
         verbose_name_plural = _('Ingredients')
-        indexes = [
-            models.Index(fields=('name',))
-        ]
 
     def __str__(self):
         return f'{self.name[:TEXT_LENGTH]}'
-
-
-class RecipeManager(models.Manager):
-    def get_recipes(self):
-        return self.all().select_related('author')
-
-    def get_recipes_count(self):
-        return self.all().count()
 
 
 class Recipe(models.Model):
@@ -109,8 +98,6 @@ class Recipe(models.Model):
         verbose_name=_('Cooking time'),
     )
 
-    objects = RecipeManager()
-
     class Meta:
         verbose_name = _('Recipe')
         verbose_name_plural = _('Recipes')
@@ -126,13 +113,13 @@ class RecipeIngredient(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='ingredients',
+        related_name='ingredient',
         verbose_name=_('Ingredients'),
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredients',
+        related_name='ingredient',
         verbose_name=_('Recipes'),
     )
     amount = models.IntegerField(
@@ -150,7 +137,7 @@ class RecipeIngredient(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'ingredient'],
-                name='%(app_label)s_%(class)s',
+                name='%(app_label)s_%(class)s_recipe_ingredient_uniq',
             )
         ]
 
@@ -162,14 +149,14 @@ class RecipeTag(models.Model):
     tag = models.ForeignKey(
         Tag,
         on_delete=models.CASCADE,
-        related_name='tags',
+        related_name='tag',
         verbose_name=_('Tags'),
     )
 
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='tags',
+        related_name='tag',
         verbose_name=_('Recipes'),
     )
 
@@ -179,7 +166,7 @@ class RecipeTag(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'tag'],
-                name='%(app_label)s_%(class)s',
+                name='%(app_label)s_%(class)s_recipe_tag_uniq',
             )
         ]
 
@@ -190,9 +177,6 @@ class RecipeTag(models.Model):
 class ShoppingCartManager(models.Manager):
     def is_in_shopping_cart(self, user, recipe):
         return self.filter(user=user, recipe=recipe).exists()
-
-    def delete(self, user, recipe):
-        return self.filter(user=user, recipe=recipe).delete()
 
 
 class ShoppingCart(models.Model):
@@ -217,7 +201,7 @@ class ShoppingCart(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'user'],
-                name='%(app_label)s_%(class)s',
+                name='%(app_label)s_%(class)s_recipe_user_uniq',
             )
         ]
         indexes = [
@@ -231,9 +215,6 @@ class ShoppingCart(models.Model):
 class FavoriteManager(models.Manager):
     def is_favorited(self, user, recipe):
         return self.filter(user=user, recipe=recipe).exists()
-
-    def delete(self, user, recipe):
-        return self.filter(user=user, recipe=recipe).delete()
 
 
 class Favorite(models.Model):
@@ -258,7 +239,7 @@ class Favorite(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'user'],
-                name='%(app_label)s_%(class)s',
+                name='%(app_label)s_%(class)s_recipe_user_uniq',
             )
         ]
         indexes = [

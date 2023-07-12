@@ -1,20 +1,12 @@
-import base64
+import collections
 
-from django.core.files.base import ContentFile
+from django.db.models import F
 from rest_framework import serializers
 
+from core.fields import Base64ImageField
 from core.mixins import CreateUpdateNestedMixin
-from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient)
-from users.serializers import CustomUserSerializer
-
-
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-        return super().to_internal_value(data)
+from recipes.models import (Tag, Ingredient, Recipe)
+from users.serializers.user_serializers import CustomUserSerializer
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -29,7 +21,7 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class RecipeReadOnlySerializer(serializers.ModelSerializer):
+class RecipeMiniFieldSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=True)
 
     class Meta:
@@ -38,7 +30,7 @@ class RecipeReadOnlySerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class RecipeSerializer(CreateUpdateNestedMixin, serializers.ModelSerializer):
+class BaseRecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = IngredientSerializer(many=True, read_only=True)
@@ -50,20 +42,11 @@ class RecipeSerializer(CreateUpdateNestedMixin, serializers.ModelSerializer):
         model = Recipe
         fields = '__all__'
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        recipe_id = representation['id']
-        for ingredient in representation['ingredients']:
-            amount = RecipeIngredient.objects.get(
-                recipe_id=recipe_id, ingredient_id=ingredient['id']).amount
-            ingredient.update({'amount': amount})
-        return representation
-
     def get_is_favorited(self, recipe):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return recipe.favorite_recipes.is_favorited(
+        return recipe.favorites.is_favorited(
             self.context.get('request').user,
             recipe,
         )
@@ -72,7 +55,35 @@ class RecipeSerializer(CreateUpdateNestedMixin, serializers.ModelSerializer):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return recipe.shoppingcart_recipes.is_in_shopping_cart(
+        return recipe.shoppingcarts.is_in_shopping_cart(
             self.context.get('request').user,
             recipe,
         )
+
+
+class RecipeReadOnlySerializer(BaseRecipeSerializer):
+    ingredients = serializers.SerializerMethodField()
+
+    def get_ingredients(self, recipe):
+        return recipe.ingredients.values(
+            'id', 'name', 'measurement_unit', amount=F('ingredient__amount')
+        )
+
+
+class RecipeSerializer(CreateUpdateNestedMixin, BaseRecipeSerializer):
+
+    def validate(self, attrs):
+        ingredients = self.initial_data['ingredients']
+        ingredients_id = collections.Counter(
+            [ingredient['id'] for ingredient in ingredients])
+
+        if any(map(lambda value: value > 1, ingredients_id.values())):
+            raise serializers.ValidationError('Duplicate ingredients')
+
+        return attrs
+
+    def to_representation(self, instance):
+        return RecipeReadOnlySerializer(
+            instance,
+            context=self.context,
+        ).data

@@ -1,7 +1,7 @@
-from collections import OrderedDict
-
 from django.db import transaction
-from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers, status
+from rest_framework.response import Response
 
 
 class CreateUpdateNestedMixin(serializers.ModelSerializer):
@@ -28,12 +28,13 @@ class CreateUpdateNestedMixin(serializers.ModelSerializer):
                         id__in=related_data))
 
                 except TypeError:
+                    m2m_manager.clear()
                     for data_dict in related_data:
-                        if isinstance(data_dict, OrderedDict):
+                        if isinstance(data_dict, dict):
                             id = data_dict.pop('id')
                             model_obj = model.objects.get(id=id)
-                            m2m_manager.set(
-                                [model_obj],
+                            m2m_manager.add(
+                                model_obj,
                                 through_defaults=data_dict,
                             )
 
@@ -48,3 +49,27 @@ class CreateUpdateNestedMixin(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)
         return self.update_or_create(instance, validated_data)
+
+
+class CreateMixin:
+    def created(self, model=None, serializer=None, instance=None,
+                error_message='error', **kwargs):
+        if model.objects.filter(**kwargs).exists():
+            return Response(
+                {'errors': _(error_message)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        model.objects.create(**kwargs)
+        serializer = serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class DeleteMixin:
+    def deleted(self, model=None, error_message='error', **fields):
+        if not model.objects.filter(**fields).exists():
+            return Response(
+                {'errors': _(error_message)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        model.objects.delete(**fields)
+        return Response(status=status.HTTP_204_NO_CONTENT)

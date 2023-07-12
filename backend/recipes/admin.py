@@ -40,16 +40,15 @@ class RecipeAdmin(admin.ModelAdmin):
     empty_value_display = '-empty-'
 
     @admin.display(description='ingredients')
-    def get_ingredients(self, obj):
-        return '\n'.join([ingredient.name for ingredient in
-                          obj.ingredients.all()])
+    def get_ingredients(self, recipe):
+        return '\n'.join(recipe.ingredients.values_list('name', flat=True))
 
     @admin.display(description='tags')
-    def get_tags(self, obj):
-        return '\n'.join([tag.name for tag in obj.tags.all()])
+    def get_tags(self, recipe):
+        return '\n'.join(recipe.tags.values_list('name', flat=True))
 
     def in_favorites(self, recipe):
-        return recipe.favorite_recipes.count()
+        return recipe.favorites.count()
 
 
 @admin.register(Favorite)

@@ -15,11 +15,13 @@ class CustomUser(AbstractUser):
     first_name = models.CharField(_('first name'), max_length=150, )
     last_name = models.CharField(_('last name'), max_length=150, )
 
-    class Meta(AbstractUser.Meta):
+    class Meta:
+        verbose_name = _('CustomUser')
+        verbose_name_plural = _('CustomUsers')
         constraints = [
             models.UniqueConstraint(
                 fields=['email', 'username'],
-                name='%(app_label)s_%(class)s',
+                name='%(app_label)s_%(class)s_email_username_uniq',
             )
         ]
         indexes = [
@@ -31,19 +33,16 @@ class SubscriptionManager(models.Manager):
     def is_subscribed(self, user, author):
         return self.filter(user=user, author=author).exists()
 
-    def delete(self, user, author):
-        return self.filter(user=user, author=author).delete()
-
 
 class Subscription(models.Model):
     user = models.ForeignKey(
-        to=CustomUser,
+        CustomUser,
         on_delete=models.CASCADE,
         related_name='subscribers',
         verbose_name=_('Subscribers'),
     )
     author = models.ForeignKey(
-        to=CustomUser,
+        CustomUser,
         on_delete=models.CASCADE,
         related_name='subscriptions',
         verbose_name=_('Recipe author')
@@ -57,7 +56,7 @@ class Subscription(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'],
-                name='%(app_label)s_%(class)s',
+                name='%(app_label)s_%(class)s_user_author_uniq',
             )
         ]
         indexes = [
