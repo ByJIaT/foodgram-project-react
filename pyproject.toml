@@ -4,18 +4,19 @@ version = "0.1.0"
 description = ""
 authors = ["bulatgabdullin <112638878+ByJIaT@users.noreply.github.com>"]
 readme = "README.md"
+packages = [{include = "foodgram_project_react"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 django = "^4.2.2"
 djangorestframework = "^3.12.4"
 gunicorn = "^20.1.0"
-psycopg2-binary = "^2.9.5"
 drf-yasg = "^1.21.5"
 pillow = "^10.0.0"
 djoser = "^2.1.0"
 python-dotenv = "^1.0.0"
 reportlab = "^4.0.4"
+psycopg2-binary = "^2.9.6"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^4.3.21"
