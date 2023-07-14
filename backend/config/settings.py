@@ -125,7 +125,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
@@ -136,7 +135,11 @@ DJOSER = {
     'SERIALIZERS': {
         'user_create': 'users.serializers.user_serializers.CustomUserCreateSerializer',
         'user': 'users.serializers.user_serializers.CustomUserSerializer',
-    }
+    },
+    'PERMISSIONS': {
+        'user': ('rest_framework.permissions.AllowAny',),
+        'user_list': ('rest_framework.permissions.AllowAny',),
+    },
 }
 
 # project variables
