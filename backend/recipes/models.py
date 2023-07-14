@@ -101,6 +101,7 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = _('Recipe')
         verbose_name_plural = _('Recipes')
+        ordering = ('-id',)
         indexes = [
             models.Index(fields=('name',))
         ]
@@ -113,13 +114,13 @@ class RecipeIngredient(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='ingredient',
+        related_name='recipe_ingredients',
         verbose_name=_('Ingredients'),
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredient',
+        related_name='recipe_ingredients',
         verbose_name=_('Recipes'),
     )
     amount = models.IntegerField(
@@ -149,14 +150,14 @@ class RecipeTag(models.Model):
     tag = models.ForeignKey(
         Tag,
         on_delete=models.CASCADE,
-        related_name='tag',
+        related_name='recipe_tags',
         verbose_name=_('Tags'),
     )
 
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='tag',
+        related_name='recipe_tags',
         verbose_name=_('Recipes'),
     )
 
@@ -183,13 +184,13 @@ class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='shoppingcarts',
+        related_name='shopping_carts',
         verbose_name=_('ShoppingCart users'),
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='shoppingcarts',
+        related_name='shopping_carts',
         verbose_name=_('ShoppingCart recipes'),
     )
 

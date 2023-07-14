@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'rest_framework_simplejwt',
+    'django_filters',
 
     'users.apps.UsersConfig',
     'recipes.apps.RecipesConfig',
@@ -124,13 +125,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
 }
 
 DJOSER = {
@@ -138,7 +135,11 @@ DJOSER = {
     'SERIALIZERS': {
         'user_create': 'users.serializers.user_serializers.CustomUserCreateSerializer',
         'user': 'users.serializers.user_serializers.CustomUserSerializer',
-    }
+    },
+    'PERMISSIONS': {
+        'user': ('rest_framework.permissions.AllowAny',),
+        'user_list': ('rest_framework.permissions.AllowAny',),
+    },
 }
 
 # project variables

@@ -1,5 +1,3 @@
-import collections
-
 from django.db.models import F
 from rest_framework import serializers
 
@@ -55,7 +53,7 @@ class BaseRecipeSerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return recipe.shoppingcarts.is_in_shopping_cart(
+        return recipe.shopping_carts.is_in_shopping_cart(
             self.context.get('request').user,
             recipe,
         )
@@ -66,7 +64,8 @@ class RecipeReadOnlySerializer(BaseRecipeSerializer):
 
     def get_ingredients(self, recipe):
         return recipe.ingredients.values(
-            'id', 'name', 'measurement_unit', amount=F('ingredient__amount')
+            'id', 'name', 'measurement_unit', amount=F(
+                'recipe_ingredients__amount')
         )
 
 
@@ -74,10 +73,9 @@ class RecipeSerializer(CreateUpdateNestedMixin, BaseRecipeSerializer):
 
     def validate(self, attrs):
         ingredients = self.initial_data['ingredients']
-        ingredients_id = collections.Counter(
-            [ingredient['id'] for ingredient in ingredients])
+        ingredients_id = [ingredient['id'] for ingredient in ingredients]
 
-        if any(map(lambda value: value > 1, ingredients_id.values())):
+        if len(ingredients_id) != len(set(ingredients_id)):
             raise serializers.ValidationError('Duplicate ingredients')
 
         return attrs

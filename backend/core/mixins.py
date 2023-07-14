@@ -52,24 +52,30 @@ class CreateUpdateNestedMixin(serializers.ModelSerializer):
 
 
 class CreateMixin:
+    @transaction.atomic
     def created(self, model=None, serializer=None, instance=None,
-                error_message='error', **kwargs):
-        if model.objects.filter(**kwargs).exists():
+                context=None, error_message='error', **fields):
+        if model.objects.filter(**fields).exists():
             return Response(
                 {'errors': _(error_message)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        model.objects.create(**kwargs)
+        model.objects.create(**fields)
+        if context is not None:
+            serializer = serializer(instance, context=context)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         serializer = serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class DeleteMixin:
+    @transaction.atomic
     def deleted(self, model=None, error_message='error', **fields):
         if not model.objects.filter(**fields).exists():
             return Response(
                 {'errors': _(error_message)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        model.objects.delete(**fields)
+        model.objects.filter(**fields).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

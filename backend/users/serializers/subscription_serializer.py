@@ -13,6 +13,10 @@ class SubscriptionSerializer(CustomUserSerializer):
             'id', 'email', 'username', 'first_name', 'last_name',
             'is_subscribed', 'recipes', 'recipes_count',
         )
+        read_only_fields = (
+            'id', 'email', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'recipes_count',
+        )
 
     def get_recipes_count(self, user):
         return user.recipes.count()
