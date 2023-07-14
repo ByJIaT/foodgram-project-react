@@ -1,12 +1,17 @@
 [
   {
+    "name": "завтрак",
+    "color": "#51B70E",
+    "slug": "zavtrak"
+  },
+  {
     "name": "обед",
-    "color": "#cf1f36",
+    "color": "#F064A5",
     "slug": "obed"
   },
     {
     "name": "ужин",
-    "color": "#32a852",
+    "color": "#48C3F2",
     "slug": "ugin"
   }
 ]

@@ -2,16 +2,18 @@ import io
 
 from django.db.models import Sum
 from django.http import FileResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
+from core.filters import IngredientFilter, RecipeFilter
 from core.mixins import CreateMixin, DeleteMixin
+from core.pagination import LimitPageNumberPagination
 from recipes.models import (Tag, Ingredient, Recipe, Favorite, ShoppingCart)
 from recipes.serializers import (
     TagSerializer, IngredientSerializer, RecipeSerializer,
@@ -30,16 +32,19 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (SearchFilter,)
-    search_fields = ('$name',)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
 
 
 class RecipeViewSet(CreateMixin, DeleteMixin, ModelViewSet):
     queryset = (Recipe.objects.all().select_related('author')
-                .prefetch_related('ingredients')
+                .prefetch_related('ingredients', 'tags')
                 )
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthorAdminOrReadOnly,)
+    pagination_class = LimitPageNumberPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -96,18 +101,19 @@ class RecipeViewSet(CreateMixin, DeleteMixin, ModelViewSet):
     def download_shopping_cart(self, request):
         ingredients = (
             Ingredient.objects
-            .filter(recipes__shoppingcarts__user=request.user)
+            .filter(recipes__shopping_carts__user=request.user)
             .values('name', 'measurement_unit')
-            .annotate(amount=Sum('recipes__amount'))
+            .annotate(amount=Sum('recipe_ingredients__amount'))
         )
-
         buffer = io.BytesIO()
         pdf = canvas.Canvas(buffer)
-        pdfmetrics.registerFont(TTFont('Vera', 'Vera.ttf', 'UTF-8'))
-        pdf.setFont('Vera', 20)
-        pdf.drawString(200, 800, 'Shopping cart')
-        pdf.setFont('Vera', 14)
-        y = 750
+
+        pdfmetrics.registerFont(TTFont('FreeSans', 'fonts/FreeSans.ttf'))
+        pdf.setPageSize((300, 400))
+        pdf.setFont('FreeSans', 20)
+        pdf.drawString(90, 370, 'Shopping cart')
+        pdf.setFont('FreeSans', 14)
+        y = 340
         for ingredient in ingredients:
             pdf.drawString(20, y, f'{ingredient["name"]}: '
                                   f'{ingredient["amount"]} '
@@ -120,4 +126,4 @@ class RecipeViewSet(CreateMixin, DeleteMixin, ModelViewSet):
         pdf.save()
         buffer.seek(0)
         return FileResponse(buffer, as_attachment=True,
-                            filename='shopping cart.pdf')
+                            filename='shopping_cart.pdf')
