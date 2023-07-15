@@ -18,6 +18,7 @@ class CustomUser(AbstractUser):
     class Meta:
         verbose_name = _('CustomUser')
         verbose_name_plural = _('CustomUsers')
+        ordering = ('first_name', 'last_name')
         constraints = [
             models.UniqueConstraint(
                 fields=['email', 'username'],

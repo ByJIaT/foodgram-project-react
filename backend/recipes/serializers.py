@@ -72,13 +72,18 @@ class RecipeReadOnlySerializer(BaseRecipeSerializer):
 class RecipeSerializer(CreateUpdateNestedMixin, BaseRecipeSerializer):
 
     def validate(self, attrs):
-        ingredients = self.initial_data['ingredients']
-        ingredients_id = [ingredient['id'] for ingredient in ingredients]
+        ingredients_id = [
+            ingredient['id'] for ingredient in attrs['ingredients']]
 
         if len(ingredients_id) != len(set(ingredients_id)):
             raise serializers.ValidationError('Duplicate ingredients')
 
         return attrs
+
+    def to_internal_value(self, data):
+        result = super().to_internal_value(data)
+        result['ingredients'] = data['ingredients']
+        return result
 
     def to_representation(self, instance):
         return RecipeReadOnlySerializer(

@@ -7,7 +7,7 @@ from rest_framework.response import Response
 class CreateUpdateNestedMixin(serializers.ModelSerializer):
     """Принимает данные вида [1,] или [{'id': 1},]."""
 
-    def update_or_create(self, instance, validated_data):
+    def _extract_relations(self, validated_data):
         reverse_relations = {}
 
         for field_name, field in self.fields.items():
@@ -17,6 +17,9 @@ class CreateUpdateNestedMixin(serializers.ModelSerializer):
 
                 reverse_relations[field_name] = field
 
+        return reverse_relations
+
+    def update_or_create(self, instance, reverse_relations):
         for field_name, field in reverse_relations.items():
             model = field.child.Meta.model
             related_data = self.initial_data[field_name]
@@ -42,13 +45,15 @@ class CreateUpdateNestedMixin(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        reverse_relations = self._extract_relations(validated_data)
         instance = super().create(validated_data)
-        return self.update_or_create(instance, validated_data)
+        return self.update_or_create(instance, reverse_relations)
 
     @transaction.atomic
     def update(self, instance, validated_data):
+        reverse_relations = self._extract_relations(validated_data)
         instance = super().update(instance, validated_data)
-        return self.update_or_create(instance, validated_data)
+        return self.update_or_create(instance, reverse_relations)
 
 
 class CreateMixin:
