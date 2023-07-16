@@ -23,7 +23,7 @@ services:
   backend:
     build:
       context: "../"
-      dockerfile: ./backend/Dockerfile
+      dockerfile: Dockerfile
     restart: always
     volumes:
       - static_dir:/app/static/
@@ -57,4 +57,3 @@ services:
       - backend
     env_file:
       - ../.env
-
