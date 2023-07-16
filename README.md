@@ -12,7 +12,7 @@ Foodgram - здесь собираются любители еды и кулин
 - Скачивайте список покупок
 
 ---
-![Recipe Page](foodgram_screenshots/recipe.png)
+![Recipe Page](screenshots/Screenshot from 2023-07-16 17-51-18.png)
 
 ---
 ### Технологии
@@ -20,7 +20,19 @@ Foodgram - здесь собираются любители еды и кулин
 - Django 4
 - PostgreSQL 15
 ### Запуск на удаленном сервере
-Создайте .env и заполните, как в образце .env.example.
-
-
+Создайте .env файл и заполните по образцу .env.example:
+``` bash
+touch .env
+```
+Скопируйте папку infra на сервер.
+```bash
+scp -r infra/* <server user>@<server IP>:/home/<server user>/foodgram/
+```
+```bash
+cd infra
+```
+Запустите докер
+```bash
+sudo docker compose -f docker-compose.production.yml up -d
+```
 
