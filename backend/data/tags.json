@@ -18,10 +18,5 @@
     "name": "французская",
     "color": "#8E48F2",
     "slug": "france"
-  },
-  {
-    "name": "индийская",
-    "color": "#F5EE0D",
-    "slug": "indian"
   }
 ]

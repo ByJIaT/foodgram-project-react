@@ -22,7 +22,7 @@ services:
 
   backend:
     build:
-      context: "../"
+      context: ..
       dockerfile: Dockerfile
     restart: always
     volumes:
