@@ -1,0 +1,27 @@
+[
+  {
+    "name": "итальянская",
+    "color": "#51B70E",
+    "slug": "italian"
+  },
+  {
+    "name": "японская",
+    "color": "#F064A5",
+    "slug": "japan"
+  },
+  {
+    "name": "мексиканская",
+    "color": "#48C3F2",
+    "slug": "mexican"
+  },
+  {
+    "name": "французская",
+    "color": "#8E48F2",
+    "slug": "france"
+  },
+  {
+    "name": "индийская",
+    "color": "#F5EE0D",
+    "slug": "indian"
+  }
+]

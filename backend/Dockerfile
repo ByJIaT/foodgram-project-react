@@ -11,8 +11,6 @@ RUN poetry config virtualenvs.create false \
 
 COPY backend/ .
 
-COPY data /app/data
-
 RUN chmod +x /app/entrypoint.sh
 
 ENTRYPOINT ["/app/entrypoint.sh"]
