@@ -12,9 +12,6 @@ Foodgram - здесь собираются любители еды и кулин
 - Скачивайте список покупок
 
 ---
-![Recipe Page](screenshots/Screenshot from 2023-07-16 17-51-18.png)
-
----
 ### Технологии
 - Python 3
 - Django 4
@@ -26,7 +23,7 @@ touch .env
 ```
 Скопируйте папку infra на сервер.
 ```bash
-scp -r infra/* <server user>@<server IP>:/home/<server user>/foodgram/
+scp -r infra/ <server user>@<server IP>:/home/<server user>/foodgram/
 ```
 ```bash
 cd infra

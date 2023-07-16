@@ -21,7 +21,7 @@ services:
       retries: 5
 
   backend:
-    image: ${DOCKER_USERNAME}/foodgram_backend:master
+    image: byjiat/foodgram_backend:master
     restart: on-failure
     volumes:
       - static_dir:/app/static/
@@ -35,9 +35,11 @@ services:
       - ../.env
 
   frontend:
-    image: ${DOCKER_USERNAME}/foodgram_frontend:master
+    image: byjiat/foodgram_frontend:master
     volumes:
       - ../frontend/:/app/result_build/
+    env_file:
+      - ../.env
 
   nginx:
     image: nginx:1.23.3
