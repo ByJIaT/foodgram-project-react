@@ -9,8 +9,8 @@ COPY ./poetry.lock ./pyproject.toml /app/
 RUN poetry config virtualenvs.create false \
     && poetry install --only main --no-interaction --no-ansi --no-root
 
-COPY . .
+COPY backend/ .
 
-RUN chmod +x entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 ENTRYPOINT ["/app/entrypoint.sh"]
