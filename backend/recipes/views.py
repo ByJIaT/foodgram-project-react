@@ -3,6 +3,7 @@ import io
 from django.db.models import Sum
 from django.http import FileResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from reportlab.lib.pagesizes import letter
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
@@ -106,23 +107,20 @@ class RecipeViewSet(CreateMixin, DeleteMixin, ModelViewSet):
             .annotate(amount=Sum('recipe_ingredients__amount'))
         )
         buffer = io.BytesIO()
-        pdf = canvas.Canvas(buffer)
-
         pdfmetrics.registerFont(TTFont('FreeSans', 'fonts/FreeSans.ttf'))
-        pdf.setPageSize((300, 400))
-        pdf.setFont('FreeSans', 20)
-        pdf.drawString(90, 370, 'Shopping cart')
-        pdf.setFont('FreeSans', 14)
-        y = 340
-        for ingredient in ingredients:
-            pdf.drawString(20, y, f'{ingredient["name"]}: '
-                                  f'{ingredient["amount"]} '
-                                  f'{ingredient["measurement_unit"]}'
-                           )
-            y -= 25
+        pdf = canvas.Canvas(buffer, pagesize=(350, 400),
+                            initialFontName='FreeSans', initialFontSize=12)
 
-        pdf.setTitle('Foodgram')
-        pdf.showPage()
+        y = 380
+        for ingredient in ingredients:
+            pdf.drawString(20, y, f'{ingredient["name"]}:'
+                                  f' {ingredient["amount"]}'
+                                  f' {ingredient["measurement_unit"]}')
+            y -= 20
+            if y <= 20:
+                pdf.showPage()
+                y = 380
+
         pdf.save()
         buffer.seek(0)
         return FileResponse(buffer, as_attachment=True,

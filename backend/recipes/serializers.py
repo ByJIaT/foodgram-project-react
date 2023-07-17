@@ -1,8 +1,10 @@
 from django.db.models import F
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from core.fields import Base64ImageField
 from core.mixins import CreateUpdateNestedMixin
+from core.utils import is_digit
 from recipes.models import (Tag, Ingredient, Recipe)
 from users.serializers.user_serializers import CustomUserSerializer
 
@@ -76,7 +78,16 @@ class RecipeSerializer(CreateUpdateNestedMixin, BaseRecipeSerializer):
             ingredient['id'] for ingredient in attrs['ingredients']]
 
         if len(ingredients_id) != len(set(ingredients_id)):
-            raise serializers.ValidationError('Duplicate ingredients')
+            raise serializers.ValidationError(_('Duplicate ingredients'))
+
+        for ingredient in attrs['ingredients']:
+            if not is_digit(ingredient['amount']):
+                raise serializers.ValidationError(
+                    _('Enter a number in the weight of the ingredient'))
+
+            if int(ingredient['amount']) < 1:
+                raise serializers.ValidationError(
+                    _('Ingredients must be greate then 0'))
 
         return attrs
 
