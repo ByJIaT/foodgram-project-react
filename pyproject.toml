@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["bulatgabdullin <112638878+ByJIaT@users.noreply.github.com>"]
 readme = "README.md"
-packages = [{include = "foodgram_project_react"}]
+#packages = [{include = "foodgram_project_react"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
